@@ -30,7 +30,7 @@ pipeline {
             steps {
                 sh '''
                 ssh user@APP_VM "
-                    docker login registry.local -u admin -p PASSWOR &&
+                    docker login registry.local -u admin -p 123456 &&
                     docker pull $REGISTRY/$IMAGE:$BUILD_NUMBER &&
                     docker stop hello || true &&
                     docker rm hello || true &&
