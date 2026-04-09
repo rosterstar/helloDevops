@@ -7,7 +7,6 @@ pipeline {
     }
 
     stages {
-
         stage('Build') {
             steps {
                 sh 'docker build -t $REGISTRY/$IMAGE:$BUILD_NUMBER .'
@@ -27,17 +26,18 @@ pipeline {
         }
 
         stage('Deploy') {
-           steps {
+            steps {
                 sshagent(['app-server-ssh']) {
-                    sh '''
+                    sh """
                         ssh -o StrictHostKeyChecking=no pod2user@192.168.65.5 "
-                            docker login registry.local -u admin -p 123456 &&
-                            docker pull registry.local/hello-devops:15 &&
+                            docker login ${REGISTRY} -u admin -p 123456 &&
+                            docker pull ${REGISTRY}/${IMAGE}:${BUILD_NUMBER} &&
                             docker stop hello || true &&
                             docker rm hello || true &&
-                            docker run -d -p 8080:8080 --name hello registry.local/hello-devops:15
-                "
-                '''
+                            docker run -d -p 8080:8080 --name hello ${REGISTRY}/${IMAGE}:${BUILD_NUMBER}
+                        "
+                    """
+                } // <--- Вот эта скобка для sshagent была потеряна
             }
         }
     }
