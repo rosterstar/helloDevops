@@ -29,7 +29,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 sh '''
-                ssh user@APP_VM "
+                ssh pod2user@192.168.65.5 "
                     docker login registry.local -u admin -p 123456 &&
                     docker pull $REGISTRY/$IMAGE:$BUILD_NUMBER &&
                     docker stop hello || true &&
