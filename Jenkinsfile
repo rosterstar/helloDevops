@@ -30,7 +30,7 @@ pipeline {
             steps {
                 sh '''
                 ssh pod2user@192.168.65.5 "
-                    docker login registry.local -u admin -p 123456 &&
+                    echo '123456' | docker login registry.local -u admin --password-stdin &&
                     docker pull $REGISTRY/$IMAGE:$BUILD_NUMBER &&
                     docker stop hello || true &&
                     docker rm hello || true &&
