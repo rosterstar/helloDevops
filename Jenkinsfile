@@ -15,6 +15,7 @@ pipeline {
 
         stage('Login') {
             steps {
+                sh 'docker logout registry.local || true'
                 withCredentials([usernamePassword(
                     credentialsId: 'harbor-jenkins',
                     usernameVariable: 'USER',
