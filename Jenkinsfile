@@ -21,7 +21,7 @@ pipeline {
                     usernameVariable: 'USER',
                     passwordVariable: 'PASS'
                 )]) {
-                    // Используем одинарные кавычки. Jenkins сам пробросит в них USER и PASS
+                    // Используем одинарные кавычки для sh, чтобы Jenkins пробросил $USER (robot$jenkins) корректно
                     sh 'echo "$PASS" | docker login $REGISTRY -u "$USER" --password-stdin'
                 }
             }
@@ -35,16 +35,19 @@ pipeline {
 
         stage('Deploy') {
             steps {
+                // Используем SSH-ключ pod2user для входа на сервер
                 sshagent(['app-server-ssh']) {
+                    // Берем креды робота robot$deploy для скачивания образа
                     withCredentials([usernamePassword(
                         credentialsId: 'harbor-deploy',
                         usernameVariable: 'D_USER',
                         passwordVariable: 'D_PASS'
                     )]) {
-                        // Здесь используем двойные кавычки для SSH, но экранируем переменные внутри
                         sh """
                         ssh -o StrictHostKeyChecking=no pod2user@192.168.65.5 "
-                            echo '${D_PASS}' | docker login ${REGISTRY} -u '${D_USER}' --password-stdin &&
+                            # Логинимся в Harbor на удаленной ВМ под роботом robot$deploy
+                            echo '${D_PASS}' | docker login ${REGISTRY} -u '${D_USER}' --password-stdin &&               
+                            
                             docker pull ${REGISTRY}/${IMAGE}:${BUILD_NUMBER} &&
                             docker stop hello || true &&
                             docker rm hello || true &&
