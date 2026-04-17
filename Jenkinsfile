@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        REGISTRY = "registry.local"
+        REGISTRY = "registry.local/devops"
         IMAGE = "hello-devops"
     }
 
@@ -15,8 +15,13 @@ pipeline {
 
         stage('Login') {
             steps {
-                // Рекомендуется также использовать withCredentials здесь для безопасности
-                sh 'echo "123456" | docker login $REGISTRY -u admin --password-stdin'
+                withCredentials([usernamePassword(
+                    credentialsId: 'harbor-jenkins',
+                    usernameVariable: 'USER',
+                    passwordVariable: 'PASS'
+                )]) {
+                    sh 'echo $PASS | docker login $REGISTRY -u $USER --password-stdin'
+                }
             }
         }
 
