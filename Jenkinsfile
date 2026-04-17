@@ -15,13 +15,14 @@ pipeline {
 
         stage('Login') {
             steps {
-                sh 'docker logout registry.local || true'
+                sh 'docker logout $REGISTRY || true'
                 withCredentials([usernamePassword(
                     credentialsId: 'harbor-jenkins',
                     usernameVariable: 'USER',
                     passwordVariable: 'PASS'
                 )]) {
-                sh   "echo '\$PASS' | docker login $REGISTRY -u '\$USER' --password-stdin"
+                    // Используем одинарные кавычки для защиты спецсимволов в логине робота
+                    sh "echo '\$PASS' | docker login $REGISTRY -u '\$USER' --password-stdin"
                 }
             }
         }
@@ -37,12 +38,12 @@ pipeline {
                 sshagent(['app-server-ssh']) {
                     withCredentials([usernamePassword(
                         credentialsId: 'harbor-deploy',
-                        usernameVariable: 'USER',
-                        passwordVariable: 'PASS'
+                        usernameVariable: 'D_USER',
+                        passwordVariable: 'D_PASS'
                     )]) {
                         sh """
                         ssh -o StrictHostKeyChecking=no pod2user@192.168.65.5 "
-                            echo '${PASS}' | docker login ${REGISTRY} -u ${USER} --password-stdin &&
+                            echo '${D_PASS}' | docker login ${REGISTRY} -u '${D_USER}' --password-stdin &&
                             docker pull ${REGISTRY}/${IMAGE}:${BUILD_NUMBER} &&
                             docker stop hello || true &&
                             docker rm hello || true &&
@@ -55,5 +56,3 @@ pipeline {
         }
     }
 }
-
-
