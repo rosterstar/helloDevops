@@ -21,8 +21,8 @@ pipeline {
                     usernameVariable: 'USER',
                     passwordVariable: 'PASS'
                 )]) {
-                    // Используем одинарные кавычки для защиты спецсимволов в логине робота
-                    sh "echo '\$PASS' | docker login $REGISTRY -u '\$USER' --password-stdin"
+                    // Используем одинарные кавычки. Jenkins сам пробросит в них USER и PASS
+                    sh 'echo "$PASS" | docker login $REGISTRY -u "$USER" --password-stdin'
                 }
             }
         }
@@ -41,6 +41,7 @@ pipeline {
                         usernameVariable: 'D_USER',
                         passwordVariable: 'D_PASS'
                     )]) {
+                        // Здесь используем двойные кавычки для SSH, но экранируем переменные внутри
                         sh """
                         ssh -o StrictHostKeyChecking=no pod2user@192.168.65.5 "
                             echo '${D_PASS}' | docker login ${REGISTRY} -u '${D_USER}' --password-stdin &&
