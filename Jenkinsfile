@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     environment {
-        REGISTRY = "registry.local/devops"
-        IMAGE = "hello-devops"
+        REGISTRY = "registry.local"
+        IMAGE = "devops/hello-devops"
     }
 
     stages {
@@ -20,7 +20,7 @@ pipeline {
                     usernameVariable: 'USER',
                     passwordVariable: 'PASS'
                 )]) {
-                    sh 'echo $PASS | docker login registry.local -u $USER --password-stdin'
+                    sh 'echo $PASS | docker login $REGISTRY -u $USER --password-stdin'
                 }
             }
         }
