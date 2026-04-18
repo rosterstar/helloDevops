@@ -38,7 +38,7 @@ pipeline {
             steps {                
                 sshagent(['app-server-ssh']) {                    
                     withCredentials([usernamePassword(
-                        credentialsId: 'harbor-deploy',
+                        credentialsId: 'harbor-jenkins',
                         usernameVariable: 'D_USER',
                         passwordVariable: 'D_PASS'
                     )]) {
