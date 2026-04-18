@@ -3,13 +3,15 @@ pipeline {
 
     environment {
         REGISTRY = "registry.local"
-        IMAGE = "devops/hello-devops"
+        PROJECT = "devops"
+        IMAGE_NAME = "hello-devops"
+        FULL_IMAGE_PATH = "${REGISTRY}/${PROJECT}/${IMAGE_NAME}"
     }
 
     stages {
         stage('Build') {
             steps {
-                sh 'docker build -t $REGISTRY/$IMAGE:$BUILD_NUMBER .'
+                sh 'docker build -t ${FULL_IMAGE_PATH}:${BUILD_NUMBER} .'
             }
         }
 
@@ -20,8 +22,7 @@ pipeline {
                     credentialsId: 'harbor-jenkins',
                     usernameVariable: 'USER',
                     passwordVariable: 'PASS'
-                )]) {
-                    // Используем одинарные кавычки для sh, чтобы Jenkins пробросил $USER (robot$jenkins) корректно
+                )]) {                    
                     sh 'echo "$PASS" | docker login $REGISTRY -u "$USER" --password-stdin'
                 }
             }
@@ -29,25 +30,21 @@ pipeline {
 
         stage('Push') {
             steps {
-                sh 'docker push $REGISTRY/$IMAGE:$BUILD_NUMBER'
+                sh 'docker push ${FULL_IMAGE_PATH}:${BUILD_NUMBER}'
             }
         }
 
         stage('Deploy') {
-            steps {
-                // Используем SSH-ключ pod2user для входа на сервер
-                sshagent(['app-server-ssh']) {
-                    // Берем креды робота robot$deploy для скачивания образа
+            steps {                
+                sshagent(['app-server-ssh']) {                    
                     withCredentials([usernamePassword(
                         credentialsId: 'harbor-deploy',
                         usernameVariable: 'D_USER',
                         passwordVariable: 'D_PASS'
                     )]) {
                         sh """
-                        ssh -o StrictHostKeyChecking=no pod2user@192.168.65.5 "
-                            # Логинимся в Harbor на удаленной ВМ под роботом robot$deploy
-                            echo '${D_PASS}' | docker login ${REGISTRY} -u '${D_USER}' --password-stdin &&               
-                            
+                        ssh -o StrictHostKeyChecking=no pod2user@192.168.65.5 "                            
+                            echo '${D_PASS}' | docker login ${REGISTRY} -u '${D_USER}' --password-stdin &&                                           
                             docker pull ${REGISTRY}/${IMAGE}:${BUILD_NUMBER} &&
                             docker stop hello || true &&
                             docker rm hello || true &&
