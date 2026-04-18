@@ -11,7 +11,7 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                sh 'docker build -t ${FULL_IMAGE_PATH}:${BUILD_NUMBER} .'
+                sh 'docker build --provenance=false --sbom=false -t ${FULL_IMAGE_PATH}:${BUILD_NUMBER} .'
             }
         }
 
