@@ -30,7 +30,7 @@ pipeline {
 
         stage('Push') {
             steps {
-                sh 'docker push ${FULL_IMAGE_PATH}:${BUILD_NUMBER}'
+                sh 'docker push ${FULL_IMAGE_PATH}'
             }
         }
 
