@@ -4,8 +4,8 @@ pipeline {
     environment {
         REGISTRY = "registry.local"
         PROJECT = "devops"
-        IMAGE_NAME = "hello-devops"
-        FULL_IMAGE_PATH = "${REGISTRY}/${PROJECT}/${IMAGE_NAME}"
+        IMAGE = "hello-devops"
+        FULL_IMAGE_PATH = "${REGISTRY}/${PROJECT}"
     }
 
     stages {
