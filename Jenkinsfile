@@ -5,7 +5,7 @@ pipeline {
         REGISTRY = "registry.local"
         PROJECT = "devops"
         IMAGE = "hello-devops"
-        FULL_IMAGE_PATH = "${REGISTRY}/${PROJECT}"
+        FULL_IMAGE_PATH = "${REGISTRY}/${PROJECT}/${IMAGE}"
     }
 
     stages {
@@ -30,7 +30,7 @@ pipeline {
 
         stage('Push') {
             steps {
-                sh 'docker push ${FULL_IMAGE_PATH}'
+                sh 'docker push ${FULL_IMAGE_PATH}:${BUILD_NUMBER}'
             }
         }
 
@@ -45,10 +45,10 @@ pipeline {
                         sh """
                         ssh -o StrictHostKeyChecking=no pod2user@192.168.65.5 "                            
                             echo '${D_PASS}' | docker login ${REGISTRY} -u '${D_USER}' --password-stdin &&                                           
-                            docker pull ${REGISTRY}/${IMAGE}:${BUILD_NUMBER} &&
+                            docker pull ${FULL_IMAGE_PATH}:${BUILD_NUMBER} &&
                             docker stop hello || true &&
                             docker rm hello || true &&
-                            docker run -d -p 8080:8080 --name hello ${REGISTRY}/${IMAGE}:${BUILD_NUMBER}
+                            docker run -d --name hello -p 8080:8080 ${FULL_IMAGE_PATH}:${BUILD_NUMBER}
                         "
                         """
                     }
